@@ -1,0 +1,14 @@
+#!/bin/bash
+
+set -ex
+
+cd /var/www/html
+
+cp .env.dev .env
+
+php artisan migrate
+chown -R nginx:nginx /var/www/html/storage/logs
+chmod -R 755 /var/www/html/storage/logs
+
+nginx-fpm-start
+

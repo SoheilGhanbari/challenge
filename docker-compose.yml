@@ -1,0 +1,56 @@
+version: "3.7"
+services:
+  api-rss-manager:
+    build:
+      context: RSS-service
+    depends_on:
+      - pgdb-rss
+    networks:
+      - rss
+  api-user-manager:
+    build:
+      context: user-service
+    depends_on:
+      - pgdb-auth
+    networks:
+      - auth
+  openresty:
+    build:
+      context: openresty
+    networks:
+      - rss
+      - auth
+    ports:
+      - 80:80
+    volumes:
+      - $PWD/openresty/data/openresty/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - $PWD/openresty/data/openresty/lua:/etc/nginx/lua
+      - $PWD/openresty/data/openresty/conf:/etc/nginx/conf.d
+      - $PWD/openresty/data/ssh:/etc/nginx/key
+
+  pgdb-rss:
+    image: postgres:13
+    volumes:
+      - ./pgdata-rss:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=atpq238rz
+      - POSTGRES_DB=rss
+    networks:
+      - rss
+  pgdb-auth:
+    image: postgres:13
+    volumes:
+      - ./pgdata-user:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=atpq238rz
+      - POSTGRES_DB=auth
+    networks:
+      - auth
+
+networks:
+  rss:
+    driver: bridge
+  auth:
+    driver: bridge
